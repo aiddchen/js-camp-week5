@@ -92,13 +92,20 @@ function getAllCategories(products) {
 // 任務二：購物車計算模組 (中階)
 // ========================================
 
+// 計算金額
+function calculateTotal(carts, priceType) {
+  return carts.reduce(function(sum, v) {
+    return sum + v.product[priceType] * v.quantity
+  }, 0)
+}
+
 /**
  * 1. 計算購物車原價總金額
  * @param {Array} carts - 購物車陣列
  * @returns {number} - 回傳數字（原價 × 數量 的總和）
  */
 function calculateCartOriginalTotal(carts) {
-  // 請實作此函式
+  return calculateTotal(carts, "origin_price")
 }
 
 /**
@@ -107,7 +114,7 @@ function calculateCartOriginalTotal(carts) {
  * @returns {number} - 回傳數字（售價 × 數量 的總和）
  */
 function calculateCartTotal(carts) {
-  // 請實作此函式
+  return calculateTotal(carts, "price")
 }
 
 /**
@@ -116,7 +123,7 @@ function calculateCartTotal(carts) {
  * @returns {number} - 回傳原價總金額 - 售價總金額
  */
 function calculateSavings(carts) {
-  // 請實作此函式
+  return calculateCartOriginalTotal(carts) - calculateCartTotal(carts)
 }
 
 /**
@@ -125,7 +132,7 @@ function calculateSavings(carts) {
  * @returns {number} - 回傳所有商品的 quantity 總和
  */
 function calculateCartItemCount(carts) {
-  // 請實作此函式
+  return carts.reduce((sum, obj) => sum + obj.quantity, 0)
 }
 
 /**
@@ -135,7 +142,7 @@ function calculateCartItemCount(carts) {
  * @returns {boolean} - 回傳 true 或 false
  */
 function isProductInCart(carts, productId) {
-  // 請實作此函式
+  return carts.find(obj => obj.product.id === productId)? true:false
 }
 
 // ========================================
