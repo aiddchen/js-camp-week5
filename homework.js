@@ -93,7 +93,7 @@ function getAllCategories(products) {
 // ========================================
 
 // 計算金額
-function calculateTotal(carts, priceType) {
+function sumBill(carts, priceType) {
   return carts.reduce(function(sum, v) {
     return sum + v.product[priceType] * v.quantity
   }, 0)
@@ -105,7 +105,7 @@ function calculateTotal(carts, priceType) {
  * @returns {number} - 回傳數字（原價 × 數量 的總和）
  */
 function calculateCartOriginalTotal(carts) {
-  return calculateTotal(carts, "origin_price")
+  return sumBill(carts, "origin_price")
 }
 
 /**
@@ -114,7 +114,7 @@ function calculateCartOriginalTotal(carts) {
  * @returns {number} - 回傳數字（售價 × 數量 的總和）
  */
 function calculateCartTotal(carts) {
-  return calculateTotal(carts, "price")
+  return sumBill(carts, "price")
 }
 
 /**
@@ -329,5 +329,8 @@ module.exports = {
   calculateTotalRevenue,
   filterOrdersByStatus,
   generateOrderReport,
-  groupOrdersByPayment
+  groupOrdersByPayment,
+
+  // my functions
+  sumBill,
 };
