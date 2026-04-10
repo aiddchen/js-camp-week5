@@ -56,7 +56,7 @@ const orders = [
  * @returns {Object|null} - 回傳產品物件，找不到回傳 null
  */
 function getProductById(products, productId) {
-  return products.find(obj => obj.id === productId)
+  return products.find(obj => obj.id === productId) || null
 }
 
 /**
@@ -158,7 +158,18 @@ function isProductInCart(carts, productId) {
  * 如果產品已存在，合併數量；如果不存在，新增一筆
  */
 function addToCart(carts, product, quantity) {
-  // 請實作此函式
+  // 新增已存在的商品
+  if (isProductInCart(carts, product.id)) {
+    let cartId = getCartIDByProductId(carts, product.id)
+    return updateCartItemQuantity(carts, cartId, quantity)
+  }
+
+  // 新增新商品
+  return [...carts, {id: `cart-${carts.length+1}`, product: product, quantity: quantity }]
+}
+
+function getCartIDByProductId(carts, productId) {
+  return carts.find(obj => obj.product.id === productId).id
 }
 
 /**
@@ -169,7 +180,19 @@ function addToCart(carts, product, quantity) {
  * @returns {Array} - 回傳新的購物車陣列，如果 newQuantity <= 0，移除該商品
  */
 function updateCartItemQuantity(carts, cartId, newQuantity) {
-  // 請實作此函式
+  let cartIndex = getCartIndexByCartId(carts, cartId)
+
+  // 如果 newQuantity <= 0，移除該商品
+  if (newQuantity <= 0) {
+    return removeFromCart(carts, cartId)
+  }
+
+  // 更新商品數量
+  return carts.with(cartIndex, {...carts[cartIndex], quantity: carts[cartIndex].quantity + newQuantity})
+}
+
+function getCartIndexByCartId(carts, cartId) {
+  return carts.findIndex(obj => obj.id === cartId)
 }
 
 /**
@@ -179,7 +202,14 @@ function updateCartItemQuantity(carts, cartId, newQuantity) {
  * @returns {Array} - 回傳移除後的新購物車陣列
  */
 function removeFromCart(carts, cartId) {
-  // 請實作此函式
+  let cartIndex = getCartIndexByCartId(carts, cartId)
+  // 購物車項目 ID 存在時移除該項目
+  if (cartIndex >= 0) {
+    return carts.toSpliced(cartIndex, 1)
+  }
+
+  // 購物車項目 ID 不存在時，回傳緣購物車陣列
+  return carts
 }
 
 /**
@@ -187,7 +217,7 @@ function removeFromCart(carts, cartId) {
  * @returns {Array} - 回傳空陣列
  */
 function clearCart() {
-  // 請實作此函式
+  carts.length = 0
 }
 
 // ========================================
@@ -274,6 +304,10 @@ console.log('calculateTotalRevenue:', calculateTotalRevenue(orders));
 console.log('filterOrdersByStatus:', filterOrdersByStatus(orders, true));
 console.log('generateOrderReport:', generateOrderReport(orders));
 console.log('groupOrdersByPayment:', groupOrdersByPayment(orders));
+
+/* 額外 function 測試 */
+//  calculateTotal 計算金額
+
 
 // ========================================
 // 匯出函式供測試使用
