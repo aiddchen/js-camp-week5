@@ -1,3 +1,4 @@
+const { expectFailure } = require('node:test');
 const hw = require('./homework.js'); 
 
 // 測試資料
@@ -100,7 +101,7 @@ describe('任務一測試', () => {
 
 describe('任務二測試', () => {
   // ==================== sumBill ====================
-  describe('sumBill()', () => {
+  describe('sumBill(): 包含 calculateCartOriginalTotal() & calculateCartTotal()', () => {
 
     test('計算清單總金額: 原價', () => {
       const result = hw.sumBill(carts, "origin_price");
@@ -166,6 +167,166 @@ describe('任務二測試', () => {
       const result = hw.isProductInCart([], 'prod-1');
       
       expect(result).toBe(false);
+    });
+  });
+
+})
+
+
+describe("任務三測試", () => {
+  // ==================== clearCart ====================
+  describe('clearCart()', () => {
+
+    // deep equalty 比較不會過; carts 會抓到外部 carts
+    // test('清空購物車', () => {
+    //   // let carts = [{ id: 'cart-1', product: products[0], quantity: 2 }]
+    //   hw.clearCart();
+      
+    //   expect(carts).toHaveLength(0);
+    // });
+
+    test('清空"空的"購物車', () => {
+      const carts = [];
+      hw.clearCart();
+      
+      expect(carts).toEqual([]);
+    });
+
+  });
+
+  // ==================== removeFromCart ====================
+  describe('removeFromCart()', () => {
+
+    test('從購物車移除商品', () => {
+      const result = hw.removeFromCart(carts, "cart-1");
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(carts.length -1);
+      expect(result.every(cart => cart.id !== 'cart-1')).toBe(true);
+    });
+
+    test('從購物車移除不存在的商品', () => {
+      const result = hw.removeFromCart(carts, "somethingDoesNotExist");
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(carts.length);
+      expect(result).toEqual(carts);
+    });
+
+    test('從"空"購物車移除不存在的商品', () => {
+      const result = hw.removeFromCart([], "somethingDoesNotExist");
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  // ==================== updateCartItemQuantity ====================
+  describe('updateCartItemQuantity()', () => {
+
+    test('增加 購物車商品數量', () => {
+      const sample = carts[2]
+      const result = hw.updateCartItemQuantity(carts, sample.id, 50);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(carts.length);
+      expect(result.find(obj => obj.id === sample.id).quantity).toEqual(50)
+    });
+
+    test('更新的商品數量為 0 以下時刪除該商品', () => {
+      const sample = carts[2]
+      const result = hw.updateCartItemQuantity(carts, sample.id, 0);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(carts.length -1);
+      expect(result.every(obj => obj.id === sample.id)).toBe(false);
+    });
+  });
+
+  // ==================== addToCart ====================
+  describe('addToCart()', () => {
+
+    test('新增"新"商品到購物車', () => {
+      const result = hw.addToCart(carts, products[3], 5);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(carts.length +1);
+      expect(result.find(obj => obj.product.id === products[3].id).quantity).toEqual(5)
+    });
+
+    test('新增"已有的"商品到購物車', () => {
+      const sample = carts[0].product
+      const result = hw.addToCart(carts, sample, 5);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(carts.length);
+      expect(result.find(obj => obj.product === sample).quantity).toEqual(carts[0].quantity + 5)
+    });
+
+    test('減少原有商品數量', () => {
+      const sample = carts[0].product
+      const result = hw.addToCart(carts, sample, -1);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(carts.length);
+      expect(result.find(obj => obj.product === sample).quantity).toEqual(carts[0].quantity -1)
+    });
+
+    test('減少原有商品數量至 0 以下，會將商品刪除', () => {
+      const sample = carts[0].product
+      const result = hw.addToCart(carts, sample, -10);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(carts.length -1);
+      expect(result.every(obj => obj.id !== carts[0].id)).toBe(true);
+    });
+
+    test('減少"不存在的"商品數量，會回傳原購物車', () => {
+      const sample = products[3]
+      const result = hw.addToCart(carts, sample, -10);
+      
+      expect(result).toEqual(carts);
+    });
+  });
+
+})
+
+
+describe("My utils 測試", () => {
+  // ==================== getCartIndexByCartId ====================
+  describe('getCartIndexByCartId()', () => {
+
+    test('用 cartId 找到對應的 index', () => {
+      const result = hw.getCartIndexByCartId(carts, 'cart-1');
+      
+      expect(typeof result).toEqual('number');
+      expect(result).toEqual(0);
+    });
+
+    test('找不存在的 cartId，應該回傳 -1', () => {
+      const result = hw.getCartIndexByCartId(carts, 'cart-10');
+      
+      expect(typeof result).toEqual('number');
+      expect(result).toEqual(-1);
+    });
+  });
+
+  // ==================== getCartIdByProductId ====================
+  describe('getCartIdByProductId()', () => {
+
+    test('用 productId 找到對應的 cartId', () => {
+      const sample = carts[1]
+      const result = hw.getCartIdByProductId(carts, sample.product.id);
+      
+      expect(typeof result).toEqual('string');
+      expect(result).toEqual(sample.id)
+    });
+
+    test('查無商品時回傳空字串', () => {
+      const result = hw.getCartIdByProductId(carts, "somethingDoesNotExist");
+      
+      expect(typeof result).toEqual('string');
+      expect(result.length).toEqual(0)
     });
   });
 

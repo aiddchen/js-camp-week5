@@ -160,17 +160,15 @@ function isProductInCart(carts, productId) {
 function addToCart(carts, product, quantity) {
   // 新增已存在的商品
   if (isProductInCart(carts, product.id)) {
-    let cartId = getCartIDByProductId(carts, product.id)
-    return updateCartItemQuantity(carts, cartId, quantity)
+    let cartId = getCartIdByProductId(carts, product.id)
+    let sumQuantity = quantity + carts.find(obj => obj.id === cartId).quantity
+    return updateCartItemQuantity(carts, cartId, sumQuantity)
   }
 
   // 新增新商品
-  return [...carts, {id: `cart-${carts.length+1}`, product: product, quantity: quantity }]
+  return quantity > 0? [...carts, {id: `cart-${carts.length+1}`, product: product, quantity: quantity }]:carts
 }
 
-function getCartIDByProductId(carts, productId) {
-  return carts.find(obj => obj.product.id === productId).id
-}
 
 /**
  * 2. 更新購物車商品數量
@@ -180,19 +178,19 @@ function getCartIDByProductId(carts, productId) {
  * @returns {Array} - 回傳新的購物車陣列，如果 newQuantity <= 0，移除該商品
  */
 function updateCartItemQuantity(carts, cartId, newQuantity) {
-  let cartIndex = getCartIndexByCartId(carts, cartId)
-
   // 如果 newQuantity <= 0，移除該商品
   if (newQuantity <= 0) {
     return removeFromCart(carts, cartId)
   }
 
   // 更新商品數量
-  return carts.with(cartIndex, {...carts[cartIndex], quantity: carts[cartIndex].quantity + newQuantity})
-}
-
-function getCartIndexByCartId(carts, cartId) {
-  return carts.findIndex(obj => obj.id === cartId)
+  let cartIndex = getCartIndexByCartId(carts, cartId)
+  return carts.with(cartIndex, 
+    {
+      ...carts[cartIndex],
+      // quantity: carts[cartIndex].quantity + newQuantity
+      quantity: newQuantity
+    })
 }
 
 /**
@@ -210,6 +208,8 @@ function removeFromCart(carts, cartId) {
 
   // 購物車項目 ID 不存在時，回傳緣購物車陣列
   return carts
+
+  // return carts.filter()
 }
 
 /**
@@ -219,6 +219,28 @@ function removeFromCart(carts, cartId) {
 function clearCart() {
   carts.length = 0
 }
+
+/* utils */
+
+/**
+ * @param {Array} carts - 購物車
+ * @param {string} productId - 產品 ID
+ * @returns {string} - 回傳整數，查無商品會回傳 ""
+ */
+function getCartIdByProductId(carts, productId) {
+  let result = carts.find(obj => obj.product.id === productId)
+  return result? result.id:""
+}
+
+/**
+ * @param {Array} carts - 購物車
+ * @param {string} cartId - 購物車項目 ID
+ * @returns {number} - 回傳整數，查無商品會回傳 -1
+ */
+function getCartIndexByCartId(carts, cartId) {
+  return carts.findIndex(obj => obj.id === cartId)
+}
+
 
 // ========================================
 // 任務四：訂單統計模組 (挑戰)
@@ -333,4 +355,6 @@ module.exports = {
 
   // my functions
   sumBill,
+  getCartIdByProductId,
+  getCartIndexByCartId,
 };
