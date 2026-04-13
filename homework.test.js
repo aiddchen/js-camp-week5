@@ -1,4 +1,3 @@
-const { expectFailure } = require('node:test');
 const hw = require('./homework.js'); 
 
 // 測試資料
@@ -15,6 +14,30 @@ const carts = [
   { id: 'cart-1', product: products[0], quantity: 2 },
   { id: 'cart-2', product: products[2], quantity: 1 },
   { id: 'cart-3', product: products[4], quantity: 1 }
+];
+// 訂單資料
+const orders = [
+  {
+    id: 'order-1',
+    createdAt: 1704067200, // Unix timestamp
+    paid: false,
+    total: 2097,
+    user: { name: '王小明', tel: '0912345678', email: 'ming@example.com', address: '台北市信義區', payment: 'ATM' },
+    products: [
+      { ...products[0], quantity: 2 },
+      { ...products[2], quantity: 1 }
+    ]
+  },
+  {
+    id: 'order-2',
+    createdAt: 1704153600,
+    paid: true,
+    total: 899,
+    user: { name: '李小華', tel: '0923456789', email: 'hua@example.com', address: '台中市西區', payment: 'Credit Card' },
+    products: [
+      { ...products[1], quantity: 1 }
+    ]
+  }
 ];
 
 describe('任務一測試', () => {
@@ -330,4 +353,124 @@ describe("My utils 測試", () => {
     });
   });
 
+})
+
+
+describe("任務四測試", () => {
+  // ==================== filterOrdersByStatus ====================
+  describe("filterOrdersByStatus()", () => {
+
+    test("篩選'已付款'訂單", () => {
+      const result = hw.filterOrdersByStatus(orders, true);
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(1)
+      expect(result.every(obj => obj.paid !== false)).toBe(true)
+    })
+
+    test("篩選'未付款'訂單", () => {
+      const result = hw.filterOrdersByStatus(orders, false);
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(1)
+      expect(result.every(obj => obj.paid !== true)).toBe(true)
+    })
+
+    test("空陣列回傳空陣列", () => {
+      const result = hw.filterOrdersByStatus([], true);
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(0)
+    })
+
+    test("陣列中無此結果", () => {
+      const ordersAllUnpaid = [orders[0]]
+      const result = hw.filterOrdersByStatus(ordersAllUnpaid, true);
+
+      expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(0)
+    })
+    
+  })
+
+  // ==================== calculateTotalRevenue ====================
+  describe("calculateTotalRevenue()", () => {
+
+    test("計算訂單總營收", () => {
+      const result = hw.calculateTotalRevenue(orders);
+
+      expect(typeof result).toEqual("number");
+      expect(result).toEqual(
+        hw.filterOrdersByStatus(orders, true).reduce(function(sumOrder, obj) {
+        return sumOrder + obj.products.reduce((sumProduct, obj) => sumProduct + obj.price * obj.quantity, 0)
+        },  0)
+      );
+    });
+
+    test("空陣列回傳 0", () => {
+      const result = hw.calculateTotalRevenue([]);
+
+      expect(typeof result).toEqual("number");
+      expect(result).toEqual(0);
+    });
+
+    
+  })
+
+  // ==================== generateOrderReport ====================
+  describe("generateOrderReport()", () => {
+
+    test("產生訂單統計報表", () => {
+      const result = hw.generateOrderReport(orders);
+
+      expect(result instanceof Object).toBe(true);
+      expect(Object.entries(result)).toHaveLength(5);
+      expect("totalOrders" in result).toBe(true);
+      expect("paidOrders" in result).toBe(true);
+      expect("unpaidOrders" in result).toBe(true);
+      expect("totalRevenue" in result).toBe(true);
+      expect("averageOrderValue" in result).toBe(true);
+      expect(result.totalOrders).toEqual(2);
+      expect(result.paidOrders).toEqual(1);
+      expect(result.unpaidOrders).toEqual(1);
+      expect(result.totalRevenue).toEqual(899);
+      expect(result.averageOrderValue).toEqual(1498);
+    })
+    
+    test("空陣列回傳物件，值皆為 0", () => {
+      const result = hw.generateOrderReport([]);
+
+      expect(result instanceof Object).toBe(true);
+      expect(Object.entries(result)).toHaveLength(5);
+      expect("totalOrders" in result).toBe(true);
+      expect("paidOrders" in result).toBe(true);
+      expect("unpaidOrders" in result).toBe(true);
+      expect("totalRevenue" in result).toBe(true);
+      expect("averageOrderValue" in result).toBe(true);
+      expect(result.totalRevenue).toEqual(0);
+      expect(result.averageOrderValue).toEqual(0);
+    })
+    
+  })
+
+  // ==================== groupOrdersByPayment ====================
+  describe("groupOrdersByPayment()", () => {
+
+    test("依付款方式統計", () => {
+      const result = hw.groupOrdersByPayment(orders);
+
+      expect(result instanceof Object).toBe(true);
+      expect("ATM" in result).toBe(true);
+      expect("Credit Card" in result).toBe(true);
+      // test "ATM"
+      expect(Array.isArray(result.ATM)).toBe(true);
+      expect(result.ATM).toHaveLength(1);
+      expect(result.ATM[0]).toEqual(orders[0]);
+      // test "Credit Card"
+      expect(Array.isArray(result["Credit Card"])).toBe(true);
+      expect(result["Credit Card"]).toHaveLength(1);
+      expect(result["Credit Card"][0]).toEqual(orders[1]);
+    })
+    
+  })
 })

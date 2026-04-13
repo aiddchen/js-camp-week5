@@ -252,7 +252,8 @@ function getCartIndexByCartId(carts, cartId) {
  * @returns {number} - 只計算已付款 (paid: true) 的訂單
  */
 function calculateTotalRevenue(orders) {
-  // 請實作此函式
+  const paidOrders =  filterOrdersByStatus(orders, true)
+  return paidOrders.reduce((sum,obj) => sum + obj.total, 0)
 }
 
 /**
@@ -262,7 +263,7 @@ function calculateTotalRevenue(orders) {
  * @returns {Array} - 回傳篩選後的訂單陣列
  */
 function filterOrdersByStatus(orders, isPaid) {
-  // 請實作此函式
+  return orders.filter(obj => obj.paid === isPaid)
 }
 
 /**
@@ -278,7 +279,14 @@ function filterOrdersByStatus(orders, isPaid) {
  * }
  */
 function generateOrderReport(orders) {
-  // 請實作此函式
+  const report = {};
+  report.totalOrders = orders.length;
+  report.paidOrders = filterOrdersByStatus(orders, true).length;
+  report.unpaidOrders = report.totalOrders - report.paidOrders;
+  report.totalRevenue = calculateTotalRevenue(orders);
+  report.averageOrderValue = report.totalOrders !==0? orders.reduce((sum,obj) => sum + obj.total, 0) / report.totalOrders : 0;
+
+  return report
 }
 
 /**
@@ -291,7 +299,20 @@ function generateOrderReport(orders) {
  * }
  */
 function groupOrdersByPayment(orders) {
-  // 請實作此函式
+  const report = {
+    ATM: [],
+    'Credit Card': [],
+  }
+
+  orders.forEach(function(obj) {
+    if (obj.user.payment === 'ATM') {
+      report.ATM.push(obj)
+    } else {
+      report["Credit Card"].push(obj)
+    }
+  })
+
+  return report
 }
 
 // ========================================
