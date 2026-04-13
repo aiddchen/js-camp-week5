@@ -66,7 +66,7 @@ function getProductById(products, productId) {
  * @returns {Array} - 回傳符合分類的產品陣列，若 category 為 '全部' 則回傳全部產品
  */
 function getProductsByCategory(products, category) {
-  return products.filter(obj => obj.category === category)
+  return category==="全部" ? products : products.filter(obj => obj.category === category)
 }
 
 /**
@@ -217,7 +217,7 @@ function removeFromCart(carts, cartId) {
  * @returns {Array} - 回傳空陣列
  */
 function clearCart() {
-  carts.length = 0
+  return []
 }
 
 /* utils */

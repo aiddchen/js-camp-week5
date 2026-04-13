@@ -95,6 +95,12 @@ describe('任務一測試', () => {
       const result = hw.getProductsByCategory(products, '');
       expect(result).toEqual([]);
     });
+
+    test('查詢"全部"時，回傳原陣列', () => {
+      const result = hw.getProductsByCategory(products, '全部');
+      
+      expect(result).toEqual(products);
+    });
   });
 
   // ==================== getDiscountRate ====================
@@ -200,19 +206,17 @@ describe("任務三測試", () => {
   // ==================== clearCart ====================
   describe('clearCart()', () => {
 
-    // deep equalty 比較不會過; carts 會抓到外部 carts
-    // test('清空購物車', () => {
-    //   // let carts = [{ id: 'cart-1', product: products[0], quantity: 2 }]
-    //   hw.clearCart();
-      
-    //   expect(carts).toHaveLength(0);
-    // });
+    test('清空購物車', () => {
+      const result = hw.clearCart();
+
+      expect(result).toEqual([]);
+    });
 
     test('清空"空的"購物車', () => {
       const carts = [];
-      hw.clearCart();
-      
-      expect(carts).toEqual([]);
+      const result = hw.clearCart();
+
+      expect(result).toEqual([]);
     });
 
   });
